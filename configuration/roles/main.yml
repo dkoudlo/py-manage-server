@@ -1,0 +1,6 @@
+# define role and packages to apply in order
+# the role defines playbooks identified by file name 
+# from ./configuration/playbooks/ folder
+php-prod: 
+   - nginx
+   - php
