@@ -21,7 +21,7 @@ git clone git@github.com:dkoudlo/py-manage-server.git
 # cd ../
 # rm -rf PyYAML-3.12
 
-sudo apt-get install python-pip -y
+sudo apt-get install python-apt -y
 
 sudo python setup.py install
 

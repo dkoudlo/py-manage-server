@@ -1,8 +1,9 @@
 # configure nginx
 package: 
-  apt:
-    - install: php-fpm
-      verify: installed
+  apt_get:
+    - update: yes
+    - name: php5-fpm
+      status: installed
 file: 
   replace:
     - path: /etc/php5/fpm/php.ini
@@ -11,7 +12,7 @@ file:
     - path: /etc/php5/fpm/pool.d/www.conf
       find: "listen = 127.0.0.1:9000"
       replace_with: "listen = /var/run/php5-fpm.sock"
-os:
+system:
   service:
     - name: php5-fpm
-      command: restart
+      command: restarted

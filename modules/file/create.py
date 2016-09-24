@@ -1,8 +1,13 @@
+import modules.options_helper as opt_helper
 
 
 def main(options):
-    print "create"
-    print options
+
+    options_registry = ["path","content"]
+    opt_helper.check_options(options, options_registry)
+
+
+
 
 if __name__ == '__main__':
     main(options)

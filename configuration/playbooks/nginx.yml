@@ -1,10 +1,11 @@
 # configure nginx
 package: 
-  apt:
+  apt_get:
     # install package nginx
-    - install: nginx
+    - name: nginx
     # run update before install. (Default is no)
       update: yes
+      status: installed
 file: 
   replace:
     - path: /etc/nginx/sites-available/default
@@ -16,14 +17,14 @@ file:
   insert:
     - line: 4
       path: /etc/nginx/sites-available/default
-      content: >         
+      content: > 
                 # pass the PHP scripts to FastCGI server listening on the php-fpm socket
                 location ~ \.php$ {
-                  try_files $uri =404;
-                  fastcgi_pass unix:/var/run/php5-fpm.sock;
-                  fastcgi_index index.php;
-                  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                  include fastcgi_params;
+                    try_files $uri =404;
+                    fastcgi_pass unix:/var/run/php5-fpm.sock;
+                    fastcgi_index index.php;
+                    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                    include fastcgi_params;
                 }
   create:
     - path: /usr/share/nginx/www/info.php
@@ -32,7 +33,7 @@ file:
           header("Content-Type: text/plain");
           echo "Hello, world!\n";
           ?>
-os: 
+system: 
   service: 
     - name: nginx
       command: restart

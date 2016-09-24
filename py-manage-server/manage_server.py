@@ -9,7 +9,10 @@ def main(args):
     roles = role_manager.get_roles()
     
     # parse command line arguments
-    
+    if len(args) == 1:
+        print "Please provide role name to apply in the arguments."
+        print "Example: python py-manage-server php-prod"
+
     # skip first element of args
     iterargs = iter(args)
     next(iterargs) 

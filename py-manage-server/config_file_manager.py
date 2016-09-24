@@ -5,7 +5,7 @@ from collections import OrderedDict
 def get_roles_config():
     """
     Loads roles yml files defaut is main.yml file
-    TODO: add dynamic loading of yml files in the roles folder
+    TODO: add dynamic loading of yml files in the /configuration/roles folder
     """
     return load_yaml_contents("./configuration/roles/main.yml")
 
