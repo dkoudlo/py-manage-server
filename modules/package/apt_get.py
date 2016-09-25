@@ -17,9 +17,11 @@ def main(options):
     print options
     print update
     print status
+    print name
 
     if update:
-        AptPackage().update_cache()
+        print "Running Update"
+        AptPackage("").update_cache()
     
     if name and status:
         aptg = AptPackage(name)

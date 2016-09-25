@@ -3,15 +3,18 @@ import sys
 
 class AptPackage:
     
-    def __init__(self, pkg_name=""):
+
+
+    def __init__(self, pkg_name):
         self.cache = apt.cache.Cache()
-        self.pkg_name = pkg_name
-        self.pkg = self.cache[pkg_name]
-    
+        if pkg_name != "":
+            self.pkg_name = pkg_name
+            self.pkg = self.cache[pkg_name]
+
     def update_cache(self):
-        cache.update()
+        self.cache.update()
         # open updated cache
-        self.cache = cache.open()
+        self.cache = self.cache.open()
 
     def is_pkg_installed(self):
         return self.pkg.is_installed
