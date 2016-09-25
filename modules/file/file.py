@@ -1,5 +1,6 @@
 import os
 import tempfile
+import string
 
 class File:
 
@@ -16,10 +17,17 @@ class File:
                 return "file"
         return "absent"
 
-    # open by default for writing
-    def fopen(self, mode="w"):
-        with open(self.apath, mode) as file:
-            return file
+    # touch the file
+    def touch(self):
+        with open(self.apath, 'a') as f:
+            # set access and modified time to now
+            os.utime(self.apath, None)
+            
+
+    def append_to_file(self, content):
+        with open(self.apath, 'w') as f:
+            # split content by new line
+            f.write(content)
 
     # replace all pattern in file
     def replace_in_file(self, pattern, replacement):
@@ -38,29 +46,67 @@ class File:
         # move new file
         os.rename(tmp_path, self.apath)
 
-    # returns true and index if pattern found
+    # returns True and index if pattern found
     def is_in_file(self, pattern):
+        # for multiline pattern
+        if not isinstance(pattern, list):
+            pattern = pattern.splitlines()
+        # open file 
         with open(self.apath, "r") as f:
-            for num, line in enumerate(f, 0):
-                if line.contains(pattern):
-                    return True, num
-        return False, -1
+            for line in f:
+                # find first occurience
+                if pattern[0] in line:
+                    # more lines to check
+                    if len(pattern) != 1:
+                        return self.is_in_file(pattern[1:])
+                    else:
+                        return True
+        return False
 
-
-    def file_remove_first_char_inline(self):
-        pass
 
     def create_file(self):
         fhandle, tmp_path = tempfile.mkstemp()
         # close file handle
         os.close(fhandle)
-        # clean up original file
-        os.remove(self.apath)
         # move new file
         os.rename(tmp_path, self.apath)
 
-    def insert_into_file():
-        pass
+    # insert content into file by defualt right into beginning
+    def insert_into_file(self, content, index=0):
+        # return -1 position if nothing happened
+        pos = -1
+        # create temp file
+        fhandle, tmp_path = tempfile.mkstemp()
+        with open(tmp_path,"w") as tmp_file:
+            print "tmp_path: " + tmp_path
+            # open file for reading
+            with open(self.apath, "r") as old_file:
+                print "old_file " + old_file
+                for line in old_file:
+                    # start at the beginning of old file
+                    pos = 0
+                    print index + " pos " + pos
+                    # just copy untill index
+                    while index != pos:
+                        tmp_file.write(line)
+                        pos=pos+1
+                    # split up multiline content
+                    content = string.split(content, "\n")
+                    print content
+                    for inline in content:
+                        tmp_file.write(inline)
+                    # write the rest of the file
+                    tmp_file.write(line)
+            # close file handle
+            os.close(fhandle)
+            # clean up original file
+            os.remove(self.apath)
+            # move new file
+            os.rename(tmp_path, self.apath)
+
+        return pos
+
+
 
     def __init__(self, absolute_path):
         self.apath = absolute_path

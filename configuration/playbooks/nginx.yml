@@ -27,8 +27,8 @@ file:
                     include fastcgi_params;
                 }
   create:
-    - path: /usr/share/nginx/www/info.php
-      content: > 
+    - path: /usr/share/nginx/html/info.php
+      content: | 
           <?php
           header("Content-Type: text/plain");
           echo "Hello, world!\n";
@@ -36,5 +36,5 @@ file:
 system: 
   service: 
     - name: nginx
-      command: restart
+      status: restarted
 

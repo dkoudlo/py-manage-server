@@ -15,14 +15,20 @@ def main(options):
     # see if all required fields are present
     if path and find and replace_with:
         f = File(path)
-        if f.get_ftype() == "file":
+        is_find_in_file = f.is_in_file(find)
+        filetype = f.get_ftype()
+
+        if filetype == "file" and is_find_in_file:
             # only supporting files right now
             print "Replacing content in file: " + path
             f.replace_in_file(find, replace_with)
         else:
-            print "Can't run this playbook because provided 'path' is not a file, it's a " + f.get_ftype()
-            # TODO: raise exception
-            sys.exit()
+            if f.get_ftype() != "file":
+                print "Can't run this playbook because provided 'path' is not a file, it's a " + f.get_ftype()
+                # TODO: raise exception
+                sys.exit()
+            if not is_find_in_file:
+                print "Didn't find " + find + " in the file " + path + ". Nothing to replace."
 
 if __name__ == '__main__':
     main(options)

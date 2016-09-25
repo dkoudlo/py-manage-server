@@ -15,4 +15,4 @@ file:
 system:
   service:
     - name: php5-fpm
-      command: restarted
+      status: restarted

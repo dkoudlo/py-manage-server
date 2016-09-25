@@ -13,22 +13,20 @@ def main(options):
     update = options.get("update", False)
     status = options.get("status", False)
 
-    # execute update always first
+    
     print options
-    print update
-    print status
-    print name
 
+    # execute update always first
     if update:
         print "Running Update"
         AptPackage("").update_cache()
     
     if name and status:
-        aptg = AptPackage(name)
+        aptgt = AptPackage(name)
         if status == "installed":
-            aptg.install_package()
+            aptgt.install_package()
         elif status == "removed":
-            aptg.remove_package()
+            aptgt.remove_package()
         else:
             print "Unsupported status: " + status
 
