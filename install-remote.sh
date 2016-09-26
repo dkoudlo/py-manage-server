@@ -7,7 +7,7 @@ rsaKeyFile="~/.ssh/id_rsa"
 # rsa file does not exist
 if [ ! -f $rsaKeyFile ]; 
 then
-    ssh-keygen -t rsa -N "" -f $rsaKeyFile
+    ssh-keygen -t rsa -N "" -f $rsaKeyFile -q
 fi
 
 # add github host key to known_hosts
