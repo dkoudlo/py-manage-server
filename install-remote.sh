@@ -14,11 +14,11 @@ fi
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # if dir not exist
-if [ ! -d "./py-manage-server"]; 
+if [ ! -d ./py-manage-server ]; 
 then
     # lets clone config and client from github
     git clone git@github.com:dkoudlo/py-manage-server.git
     # run bootstrap setup to pull in the required dependencies for the app
-    cd py-manage-server/
-    ./bootstrap.sh
+    cd ./py-manage-server/
+    sudo ./bootstrap.sh
 fi
