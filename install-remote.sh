@@ -5,7 +5,8 @@ sudo apt-get install git-core -y
 # generate rsa key
 rsaKeyFile="~/.ssh/id_rsa"
 # rsa file does not exist
-if [ ! -b $rsaKeyFile ]
+if [ ! -b $rsaKeyFile ]; 
+then
     ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 fi
 
@@ -13,7 +14,8 @@ fi
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # if dir not exist
-if [ ! -d "./py-manage-server"]
+if [ ! -d "./py-manage-server"]; 
+then
     # lets clone config and client from github
     git clone git@github.com:dkoudlo/py-manage-server.git
     # run bootstrap setup to pull in the required dependencies for the app
