@@ -1,0 +1,5 @@
+system: 
+  service: 
+    - name: nginx
+      status: restarted
+
