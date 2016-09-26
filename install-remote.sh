@@ -5,7 +5,7 @@ sudo apt-get install git-core -y
 # generate rsa key
 rsaKeyFile="~/.ssh/id_rsa"
 # rsa file does not exist
-if [ ! -b $rsaKeyFile ]; 
+if [ ! -f $rsaKeyFile ]; 
 then
     ssh-keygen -t rsa -N "" -f $rsaKeyFile
 fi
