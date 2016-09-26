@@ -13,28 +13,20 @@ file:
       replace_with: "index index.php index.html index.htm;" 
     - path: /etc/nginx/sites-available/default
       find: "server_name localhost;"
-      replace_with: "server_name example.com;" 
-  insert:
-    - line: 4
-      path: /etc/nginx/sites-available/default
-      content: > 
-                # pass the PHP scripts to FastCGI server listening on the php-fpm socket
-                location ~ \.php$ {
-                    try_files $uri =404;
-                    fastcgi_pass unix:/var/run/php5-fpm.sock;
-                    fastcgi_index index.php;
-                    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                    include fastcgi_params;
-                }
+      replace_with: | 
+                      server_name example.com;
+                      # pass the PHP scripts to FastCGI server listening on the php-fpm socket
+                      location ~ \.php$ {
+                          try_files $uri =404;
+                          fastcgi_pass unix:/var/run/php5-fpm.sock;
+                          fastcgi_index index.php;
+                          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                          include fastcgi_params;
+                      }
   create:
-    - path: /usr/share/nginx/html/info.php
+    - path: /usr/share/nginx/html/index.php
       content: | 
           <?php
           header("Content-Type: text/plain");
           echo "Hello, world!\n";
           ?>
-system: 
-  service: 
-    - name: nginx
-      status: restarted
-

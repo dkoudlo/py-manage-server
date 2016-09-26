@@ -4,3 +4,4 @@
 php-prod: 
    - nginx
    - php
+   - nginx-restart
