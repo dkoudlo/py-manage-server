@@ -8,12 +8,17 @@ Requires python-apt installed
 ## Installation 
 ### local environment
 Install python 2.7 (check with: python -V)
+
 Git clone this repo
+
 cd py-manage-server/
+
 sudo ./bootstrap.sh
 
 ## remote install on fresh Debian distribution
 You can use the local installation steps, also provided install-remote.sh script can install Debian dependencies needed to get code onto remote server.
+
+wget --no-check-certificate https://github.com/dkoudlo/py-manage-server/raw/master/install-remote.sh && bash install-remote.sh
 
 # features 
 The core features of this Configuration Management Tool:
@@ -22,9 +27,9 @@ The tool is extensible with modules
 Modules are loaded during run time on demand
 
 # Main plugins:
-Os
-Package
-File
+- Os
+- Package
+- File
 
 # architecture 
 The architecture for this app is mainly a client. 
