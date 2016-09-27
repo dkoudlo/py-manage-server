@@ -1,0 +1,18 @@
+# configure nginx
+package: 
+  apt_get:
+    - name: php5-fpm
+      status: installed
+file: 
+  replace:
+    - path: /etc/php5/fpm/php.ini
+      find: ";cgi.fix_pathinfo=0"
+      replace_with: cgi.fix_pathinfo=0
+    - path: /etc/php5/fpm/pool.d/www.conf
+      find: "listen = 127.0.0.1:9000"
+      replace_with: "listen = /var/run/php5-fpm.sock"
+system:
+  service:
+    - name: php5-fpm
+      status: restarted
+      sudo: yes
