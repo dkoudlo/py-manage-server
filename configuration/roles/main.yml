@@ -3,5 +3,5 @@
 # from ./configuration/playbooks/ folder
 php-prod: 
    - nginx
-   - php
+   - php-fpm
    - nginx-restart

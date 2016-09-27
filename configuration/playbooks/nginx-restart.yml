@@ -2,4 +2,5 @@ system:
   service: 
     - name: nginx
       status: restarted
+      sudo: yes
 

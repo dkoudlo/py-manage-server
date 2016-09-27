@@ -34,16 +34,22 @@ class File:
             # split content by new line
             f.write(content)
 
-    # replace all pattern in file
+    # replace first occurance in file with patterns
     def replace_in_file(self, pattern, replacement):
         # create temp file
         fhandle, tmp_path = tempfile.mkstemp()
         with open(tmp_path,"w") as tmp_file:
             # open file for reading
             with open(self.apath, "r") as old_file:
+                found = False
                 for line in old_file:
-                    # write to temp file and replace if pattern found
-                    tmp_file.write(line.replace(pattern, replacement))
+                    # find only first occurence in the file write it to temp
+                    if line.find(pattern) != -1 and not found:
+                        # write to temp file and replace if pattern found
+                        tmp_file.write(line.replace(pattern, replacement))
+                        found = True
+                    else:
+                        tmp_file.write(line)
         # close file handle
         os.close(fhandle)
         # clean up original file

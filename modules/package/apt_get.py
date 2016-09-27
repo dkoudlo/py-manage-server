@@ -3,7 +3,7 @@ import modules.options_helper as opt_helper
 
 def main(options):
     
-
+    # available config keys
     options_registry = ["name","update","status"]
 
     # verify config option provided match registry
@@ -13,12 +13,9 @@ def main(options):
     update = options.get("update", False)
     status = options.get("status", False)
 
-    
-    print options
-
     # execute update always first
     if update:
-        print "Running Update"
+        print "Running: Update"
         AptPackage("").update_cache()
     
     if name and status:
