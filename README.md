@@ -1,41 +1,51 @@
 # py-manage-server
 Little config manager for Debian
 
+## Required dependencies and Installation
 Requires Python 2.7 (not tested in other versions, you are welcome to try, please open github issue with bugs) 
 Requires setuptools installed
-Requires python-apt installed 
+Requires python-apt installed
+or just run
+cd into project directory
+cd py-manage-server
+sudo ./bootstrap.sh 
 
-## Installation 
-### local environment
-Install python 2.7 (check with: python -V)
+## Running 
+the command line requires one argument defined in the ./configuration/roles/main.yml
+command line:
+sudo python py-manage-server [role-name]
 
-Git clone this repo
+example:
+sudo sudo python py-manage-server php-prod
 
-cd py-manage-server/
-
-sudo ./bootstrap.sh
-
-## remote install on fresh Debian distribution
-You can use the local installation steps, also provided install-remote.sh script can install Debian dependencies needed to get code onto remote server.
-
-wget --no-check-certificate https://github.com/dkoudlo/py-manage-server/raw/master/install-remote.sh && bash install-remote.sh
-
-# features 
+# Features 
 The core features of this Configuration Management Tool:
 Configuration is stored completely in yml files. 
-The tool is extensible with modules
+The tool is extendable with modules
 Modules are loaded during run time on demand
 
-# Main plugins:
-- Os
-- Package
-- File
+# Core plugins:
+- system in the ./modules/system/ here is a good place to add all os system related modules
+- package in the ./modules/package/ everything related to the package managment should go into here
+- file module ./modules/file/ has related files
 
-# architecture 
-The architecture for this app is mainly a client. 
+# py-manage-server Architecture 
+Basically this is a barebones client application that manages Debian system via its own declarative statements defined in the yml configuration.
+## Main concepts
+### Roles
+Roles are here to designate the configuration and add flexibility while managing the server instance. Each instance can have many roles that serve a particular set of playbooks that need to be applied in the idempotent way.
+Roles are applied in order.
+### Playbooks
+All playbooks are located in the ./configuration/playbooks folder the py-manage-server looks inside of this folder to apply declarations of state to the instance, that it finds in the role.
+Playbooks are applied in order.
+## Design choices:
+Why yml files?
+Why modular?
+Why dynamic module loading? 
 
-Server will be some repository or a web server that shows the serves configuration. In this case I'd like to propose using private github.com repository that will serve the configuration yml files and server as central config managment tool. There are a few other options to this like using more complex systems and building our own client/server solution, but based on requirements we want a quick simple solution so lets follow the KISS concept.
+## Example
+Lets say you would like to configure a Debian system and already have py-manage-server installed.
+Your boss asks you to install apache and edit the index page with the 
 
-Our client service will do the heavy lifting of provisioning and configuring the instance.
 
-Extending py-manage-server
+## Extending py-manage-server
