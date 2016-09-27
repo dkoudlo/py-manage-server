@@ -7,6 +7,7 @@ rsaKeyFile="~/.ssh/id_rsa"
 # rsa file does not exist
 if [ ! -f $rsaKeyFile ]; 
 then
+    touch $rsaKeyFile
     ssh-keygen -t rsa -N "" -f $rsaKeyFile -q
 fi
 

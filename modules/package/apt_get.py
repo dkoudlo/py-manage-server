@@ -1,4 +1,4 @@
-from modules.package.apt_package import AptPackage
+from modules.package.apt_helper import AptPackage
 import modules.options_helper as opt_helper
 
 def main(options):

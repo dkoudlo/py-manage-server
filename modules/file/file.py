@@ -4,6 +4,11 @@ import string
 
 class File:
 
+    # constractor
+    def __init__(self, absolute_path):
+        self.apath = absolute_path
+
+    # returns file type of the classes path
     def get_ftype(self):
         if os.path.lexists(self.apath):
             if os.path.islink(self.apath):
@@ -23,9 +28,9 @@ class File:
             # set access and modified time to now
             os.utime(self.apath, None)
             
-
+    # add content to the end of file
     def append_to_file(self, content):
-        with open(self.apath, 'w') as f:
+        with open(self.apath, 'a') as f:
             # split content by new line
             f.write(content)
 
@@ -46,6 +51,7 @@ class File:
         # move new file
         os.rename(tmp_path, self.apath)
 
+    # check if string pattern in file
     # returns True and index if pattern found
     def is_in_file(self, pattern):
         # for multiline pattern
@@ -63,36 +69,33 @@ class File:
                         return True
         return False
 
-
-    def create_file(self):
-        fhandle, tmp_path = tempfile.mkstemp()
-        # close file handle
-        os.close(fhandle)
-        # move new file
-        os.rename(tmp_path, self.apath)
+    # create empty file and move it to the specified location
+    # def create_file(self):
+    #     fhandle, tmp_path = tempfile.mkstemp()
+    #     # close file handle
+    #     os.close(fhandle)
+    #     # move new file
+    #     os.rename(tmp_path, self.apath)
 
     # insert content into file by defualt right into beginning
+    # returns possition/index of the insert
     def insert_into_file(self, content, index=0):
         # return -1 position if nothing happened
         pos = -1
         # create temp file
         fhandle, tmp_path = tempfile.mkstemp()
         with open(tmp_path,"w") as tmp_file:
-            print "tmp_path: " + tmp_path
             # open file for reading
             with open(self.apath, "r") as old_file:
-                print "old_file " + old_file
                 for line in old_file:
                     # start at the beginning of old file
                     pos = 0
-                    print index + " pos " + pos
                     # just copy untill index
                     while index != pos:
                         tmp_file.write(line)
                         pos=pos+1
                     # split up multiline content
                     content = string.split(content, "\n")
-                    print content
                     for inline in content:
                         tmp_file.write(inline)
                     # write the rest of the file
@@ -108,8 +111,6 @@ class File:
 
 
 
-    def __init__(self, absolute_path):
-        self.apath = absolute_path
 
 
 
