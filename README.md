@@ -6,7 +6,7 @@ Little config manager for Debian
 * Requires setuptools installed
 * Requires python-apt installed
 
-To simplify the dependencies installation go into project dirrectory and run:
+To simplify the dependencies installation go into project directory and run:
 ```sh
 cd py-manage-server
 sudo ./bootstrap.sh
@@ -22,28 +22,22 @@ Example:
 ```sh
 sudo sudo python py-manage-server php-prod
 ```
-# Features 
-The core features of this Configuration Management Tool:
-* Configuration is stored completely in yml files. 
-* The tool is extendable with modules
-* Modules are loaded during run time on demand
-
 # Architecture of py-manage-server
 This is a barebones client application that manages state of a Debian system via declarative statements. All of the configuration is in the `./configuration/` folder defined in the YAML files.
-The system was designed and built with maintainability in mind, and implements dynamic plugin loading and dependncie injection.
+The system was designed and built with maintainability in mind, and implements dynamic plugin loading and dependency injection.
 ## Main concepts
-All of the configuration is applied in order. The application internally builds a tree where the root element is `role-name` followed by the list of playbook names. The playbook name is provided as an argument when running `py-manage-server`. Once the playbook name is found, app will load the plugin that corresponds to the playbook name in roles. Playbook itself has a yaml objects of `plugin-dirrectory` nodes, later followed by children `plugin` names. You can have as many nodes as you need in the playbook, as long as the dirrectories and plugins are present and `list-of-states` are defined.
+All of the configuration is applied in order. The application internally builds a tree where the root element is `role-name` followed by the list of playbook names. The playbook name is provided as an argument when running `py-manage-server`. Once the playbook name is found, app will load the plugin that corresponds to the playbook name in roles. Playbook itself has a yaml objects of `plugin-directory` nodes, later followed by children `plugin` names. You can have as many nodes as you need in the playbook, as long as the directories and plugins are present and `list-of-states` are defined.
 ```sh
 . (user types in command: sudo py-manage-server role-name)
 └── role-name (root element of the role, in the ./configuration/roles/main.yml)
     ├── another-playbook-name
     └── playbook-name (app will load playbook from ./configuration/playbooks/playbook-name.yml)
-        ├── another-plugin-dirrectory
-        └── plugin-dirrectory (root element of the playbook-name.yml)
+        ├── another-plugin-directory
+        └── plugin-directory (root element of the playbook-name.yml)
             ├── another-plugin-name
             └── plugin-name (app will look for plugin located under ./modules/plugin-name/ folder)
                 ├── another-plugin
-                └── plugin (this is the file name of the  plugin under ./modules/plugin-name/plugin.py)
+                └── plugin (this is the filename of the  plugin under ./modules/plugin-name/plugin.py)
                     ├── another-list-of-states
                     └── list-of-states (plugin.py has a main functinon that takes in  list of states, defined in the playbook configuration)
 ```
@@ -52,23 +46,23 @@ Roles are here to designate the configuration and add flexibility while managing
 ### A bit more on Playbooks
 All playbooks are located in the `./configuration/playbooks/*.yml` files the py-manage-server looks inside of this folder to apply declarations of state to the instance, that it finds in the role.
 ## Core plugins:
-All plugins are located in the `./modules/` dirrectory and subdirrectories. Utullities classes for work with plugins are also placed inside of this folder. In some subdirrectories you will find `*_helper.py` files, that implement reusable classes that abstract the system functionality.
+All plugins are located in the `./modules/` directory and subdirectories. Utulities classes for work with plugins are also placed inside of this folder. In some subdirrectories you will find `*_helper.py` files, that implement reusable classes that abstract the system functionality.
 - system in the `./modules/system/` here is a good place to add all os system related modules
   - service plugin: manages state of the debian service
     - input:
         - name: single name of the service (Default: none ) REQUIRED
-        - status: Defines the state service whould be in. Allowed `restarted`, `stopped`, `running` (Default: none ) REQUIRED
-        - sudo: run service command with sudo priviledges. Allowed `yes`, `no` (Default: `no`)
-- package in the `./modules/package/` everything related to the package managment should go into here
+        - status: defines the state service whould be in. Allowed `restarted`, `stopped`, `running` (Default: none ) REQUIRED
+        - sudo: run service command with sudo privileges. Allowed `yes`, `no` (Default: `no`)
+- package in the `./modules/package/` everything related to the package management should go into here
   - apt_get plugin: manages apt-get for debian. Note: update can be used on its own.
     - input:
         - name: Name of the package (Default: none)
         - status: Allowed `installed`, `removed` (Default: none)
         - update: Allowed `yes`, `no` (Default: `no`) REQUIRED
-- file module `./modules/file/` has related files to the file menagment
+- file module `./modules/file/` has related files to the file management
   - create plugin: creates a file
     - input:
-        - path: Path to the new file in the existing dirrectory (Default: ) REQUIRED
+        - path: Path to the new file in the existing directory (Default: ) REQUIRED
         - content: Adds content to the file (Default: none)
   - replace plugin: safely replaces a string in the file
     - input:
@@ -76,10 +70,10 @@ All plugins are located in the `./modules/` dirrectory and subdirrectories. Utul
         - find: string to be replaced (Default: none) REQUIRED
         - replace_with: replacement of the `find` string (Default: none) REQUIRED
 ## Walk Through Example
-Your boss asks you to install apache and edit the index.html page with the Company Name. So when he goes to the http://server-ip/ he can see Company Name somewhere on the index page. All that on 5 new istances. Here's the steps you will need to do:
+Your boss asks you to install apache and edit the index.html page with the Company Name. So when he goes to the http://server-ip/ he can see Company Name somewhere on the index page. All that on 5 new instances. Here's the steps you will need to do:
 * Untar the code and add it to your repository on GitHub say you made one at the `github.com/your_usr_name/py-manage-server`
-* Lets write our roles and playbook:
-  * Lets create some playbooks first:
+* Let's write our roles and playbook:
+  * Let's create some playbooks first:
     * First we make one playbook for installing apache, we will do this with `apt_get` plugin and call it `install-apache`
       * create a new file in the `./configuration/playbooks/install-apache.yml`
       * edit this file with following states. Here we want py-manage-server to make sure apt updates its cache, and then makes sure, that standard `apache` is installed.
@@ -92,7 +86,7 @@ Your boss asks you to install apache and edit the index.html page with the Compa
               status: installed
         ```
       * save this playbook
-    * Lets make another playbook in the same folder as above called `update-index-with-company-name`
+    * Let's make another playbook in the same folder as above called `update-index-with-company-name`
         ```yml
         file: 
           replace:
