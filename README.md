@@ -28,15 +28,9 @@ The core features of this Configuration Management Tool:
 * The tool is extendable with modules
 * Modules are loaded during run time on demand
 
-# Core plugins:
-All plugins are located in the `./modules/` dirrectory. Utulities classes for work with lugins are also placed inside of this folder.
-- system in the `./modules/system/` here is a good place to add all os system related modules
-- 
-- package in the `./modules/package/` everything related to the package managment should go into here
-- file module `./modules/file/` has related files to the file manegment
-
 # Architecture of py-manage-server
-Basically this is a barebones client application that manages Debian system via its own declarative statements defined in the yml configuration.
+This is a barebones client application that manages state of a Debian system via declarative statements. All of the configuration is in the `./configuration/` folder defined in the YAML files.
+The system was designed and built with maintainability in mind, and implements dynamic plugin loading and dependncie injection.
 ## Main concepts
 All of the configuration is applied in order. The application internally builds a tree where the root element is `role-name` followed by the list of playbook names. The playbook name is provided as an argument when running `py-manage-server`. Once the playbook name is found, app will load the plugin that corresponds to the playbook name in roles. Playbook itself has a yaml objects of `plugin-dirrectory` nodes, later followed by children `plugin` names. You can have as many nodes as you need in the playbook, as long as the dirrectories and plugins are present and `list-of-states` are defined.
 ```sh
@@ -57,6 +51,30 @@ All of the configuration is applied in order. The application internally builds 
 Roles are here to designate the configuration and add flexibility while managing the server instance. Each instance can have many roles that serve a particular set of playbooks that need to be applied in the idempotent way. As an app user you will have to apply one role at the time. All roles are located in the `./configuration/roles/main.yml`
 ### A bit more on Playbooks
 All playbooks are located in the `./configuration/playbooks/*.yml` files the py-manage-server looks inside of this folder to apply declarations of state to the instance, that it finds in the role.
+## Core plugins:
+All plugins are located in the `./modules/` dirrectory and subdirrectories. Utullities classes for work with plugins are also placed inside of this folder. In some subdirrectories you will find `*_helper.py` files, that implement reusable classes that abstract the system functionality.
+- system in the `./modules/system/` here is a good place to add all os system related modules
+  - service plugin: manages state of the debian service
+    - input:
+        - name: single name of the service (Default: none ) REQUIRED
+        - status: Defines the state service whould be in. Allowed `restarted`, `stopped`, `running` (Default: none ) REQUIRED
+        - sudo: run service command with sudo priviledges. Allowed `yes`, `no` (Default: `no`)
+- package in the `./modules/package/` everything related to the package managment should go into here
+  - apt_get plugin: manages apt-get for debian. Note: update can be used on its own.
+    - input:
+        - name: Name of the package (Default: none)
+        - status: Allowed `installed`, `removed` (Default: none)
+        - update: Allowed `yes`, `no` (Default: `no`) REQUIRED
+- file module `./modules/file/` has related files to the file menagment
+  - create plugin: creates a file
+    - input:
+        - path: Path to the new file in the existing dirrectory (Default: ) REQUIRED
+        - content: Adds content to the file (Default: none)
+  - replace plugin: safely replaces a string in the file
+    - input:
+        - path: path to the file (Default: none ) REQUIRED
+        - find: string to be replaced (Default: none) REQUIRED
+        - replace_with: replacement of the `find` string (Default: none) REQUIRED
 ## Walk Through Example
 Your boss asks you to install apache and edit the index.html page with the Company Name. So when he goes to the http://server-ip/ he can see Company Name somewhere on the index page. All that on 5 new istances. Here's the steps you will need to do:
 * Untar the code and add it to your repository on GitHub say you made one at the `github.com/your_usr_name/py-manage-server`

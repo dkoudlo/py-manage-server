@@ -26,6 +26,8 @@ def main(options):
             f.append_to_file(content)
         else:
             print "Content [" + content + "] is in file already."
+    else:
+        sys.exit("Path is required.")
 
 if __name__ == '__main__':
     main(options)
