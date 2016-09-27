@@ -1,5 +1,5 @@
 import modules.options_helper as opt_helper
-from modules.file.file import File
+from modules.file.file_helper import File
 import sys
 
 
