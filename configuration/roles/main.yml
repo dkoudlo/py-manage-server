@@ -2,6 +2,10 @@
 # the role defines playbooks identified by file name 
 # from ./configuration/playbooks/ folder
 php-prod: 
+   - check-role-complience
    - nginx
    - php-fpm
    - nginx-restart
+
+complience-test:
+   - check-role-complience

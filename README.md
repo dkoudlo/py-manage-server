@@ -11,7 +11,6 @@ To simplify the dependencies installation go into project directory and run:
 cd py-manage-server
 sudo ./bootstrap.sh
 ```
-
 ## Running the project
 The command line requires one argument `[role-name]` defined in the `./configuration/roles/main.yml` as a root element
 command line:
@@ -26,7 +25,6 @@ sudo sudo python py-manage-server php-prod
 This is a barebones client application that manages state of a Debian system via declarative statements. All of the configuration is in the `./configuration/` folder defined in the YAML files.
 The system was designed and built with maintainability in mind, and implements dynamic plugin loading and dependency injection.
 ## Main concepts
-All of the configuration is applied in order. The application internally builds a tree where the root element is `role-name` followed by the list of playbook names. The playbook name is provided as an argument when running `py-manage-server`. Once the playbook name is found, app will load the plugin that corresponds to the playbook name in roles. Playbook itself has a yaml objects of `plugin-directory` nodes, later followed by children `plugin` names. You can have as many nodes as you need in the playbook, as long as the directories and plugins are present and `list-of-states` are defined.
 ```sh
 . (user types in command: sudo py-manage-server role-name)
 └── role-name (root element of the role, in the ./configuration/roles/main.yml)
@@ -96,14 +94,14 @@ Your boss asks you to install apache and edit the index.html page with the Compa
         ```
       * save this file as: ./configuration/roles/update-index-with-company-name.yml
     * Playbooks are ready!
-  * Next Step: Lets define a role `company-apache-server`. To do that we edit the `./configuration/roles/main.yml` file and paste the following:
+  * Next Step: Let's define a role `company-apache-server`. To do that we edit the `./configuration/roles/main.yml` file and paste the following:
     ```yml
     company-apache-server: 
        - install-apache
        - add-company-name-to-index
     ```
     * In this role we say that we need to run the two defined playbooks from top to bottom.
-  * Few: we are done with configuration lets commit it to our git repository and continue with provisioning the servers
+  * Few: we are done with configuration let's commit it to our git repository and continue with provisioning the servers
 1. Login to the first server with ssh. `ssh root@server-ip`
 1. Configure `git` https://help.github.com/articles/set-up-git/
 1. Get the code repository something like `git clone github.com/your_usr_name/py-manage-server`

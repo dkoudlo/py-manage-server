@@ -6,7 +6,7 @@ package:
 file: 
   replace:
     - path: /etc/php5/fpm/php.ini
-      find: ";cgi.fix_pathinfo=0"
+      find: ";cgi.fix_pathinfo=1"
       replace_with: cgi.fix_pathinfo=0
     - path: /etc/php5/fpm/pool.d/www.conf
       find: "listen = 127.0.0.1:9000"
