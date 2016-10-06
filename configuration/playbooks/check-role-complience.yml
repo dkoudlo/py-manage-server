@@ -1,6 +1,6 @@
 system:
   comply:
       - port_open: 80
-      - disk_free: '80%' 
+      - disk_free_percent: 65 
       - dns_resolves: 'http://192.21.21.12/'
       - hostname_resolves: ok
