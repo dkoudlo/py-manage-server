@@ -5,7 +5,7 @@ from modules.system.complience_helper import SystemComplience
 def main(options):
 
     # available config keys
-    options_registry = ["port_open","disk_free_percent","dns_resolves","hostname_resolves"]
+    options_registry = ["port_ok","disk_free_percent","dns_ok","hostname_ok"]
 
     # verify config option provided match registry
     modules.options_helper.check_options(options, options_registry)
@@ -13,25 +13,26 @@ def main(options):
     # config sample
     #system:
     #   comply:
-    #     - port_open: 80
+    #     - port_ok: 80
     #     - disk_free_percent: 80
-    #     - dns_resolves: 'http://192.21.21.12/'
-    #     - hostname_resolves: ok
-    port_open = options.get("port_open", False)
+    #     # google.com is reachable
+    #     - dns_ok: 'googl.com'
+    #     - hostname_ok: ok
+    port_ok = options.get("port_ok", False)
     disk_free_percent = options.get("disk_free_percent", False)
-    dns_resolves = options.get("dns_resolves", False)
-    hostname_resolves = options.get("hostname_resolves", False)
+    dns_ok = options.get("dns_ok", False)
+    hostname_ok = options.get("hostname_ok", False)
     
     if len(options) == 1:
         cmply = SystemComplience()
-        if port_open:
-            cmply.mediate_socket_connection(port_open)
+        if port_ok:
+            cmply.remediate_port(port_ok)
         if disk_free_percent:
-            cmply.mediate_storage(disk_free_percent)
-        if dns_resolves:
-            cmply.mediate_dns_resolves(dns_resolves)
-        if hostname_resolves:
-            cmply.mediate_hostname_resolves(hostname_resolves)
+            cmply.remediate_storage(disk_free_percent)
+        if dns_ok:
+            cmply.remediate_dns(dns_ok)
+        if hostname_ok:
+            cmply.remediate_hostname(hostname_ok)
     else:
         print "Please configure one option in the list format: " + ", ".join(options_registryo)
         sys.exit("Example :\nsystem:\n    comply:\n        - option1\n        -option2")

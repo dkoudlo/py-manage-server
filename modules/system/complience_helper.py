@@ -1,15 +1,15 @@
 import os
-import os.path
 import socket
 import subprocess
 import re
 from contextlib import closing
 from modules.file.file_helper import File
+
 # this class manages complience of the system
 # the complience is provided as a configuration 
 # and is checked against the system its runnning on
 # we can extend any playbook with options:
-# 
+# the remediation functions offer particular fixes
 class SystemComplience:
 
     # options passed in are defined as follows
@@ -21,60 +21,83 @@ class SystemComplience:
     #     - dns_resolves: 'http://192.21.21.12/'
     #     - hostname_resolves: ok
 
-    def __init__(self):
-        # self.hostname = localhostname
-        pass
-
-    # get hostname from path
-    def get_hostname(self):
-        pass
 
     # check if storage requirement is complient
-    # mitigation
-    # check occupied space if 
-    # if physical storage is ok, check for open files
-    def mediate_storage(self, disk_free_prcnt):
-        
+    # remitigation
+    # checks if theres enough virtual storage
+    # checks physical storage
+    # remediates  
+    # sees if there are any delete files that could be cleaned
+    def remediate_storage(self, disk_free_prcnt):
         # for now get the root FS stats
-        statvfs = os.statvfs('/')
+        # TODO: use os.stat instead
+        st = os.statvfs('/')
 
-        size = float(statvfs.f_frsize * statvfs.f_blocks)     # Size of filesystem in bytes
-        free = float(statvfs.f_frsize * statvfs.f_bfree)      # Actual number of free bytes
-        free_user = float(statvfs.f_frsize * statvfs.f_bavail)     # Number of free bytes that ordinary users have available
+        # block size * total blocks
+        size = float(st.f_frsize * st.f_blocks)
+        # block size * free blocks
+        free = float(st.f_frsize * st.f_bfree)
+        # block size * non-super user blocks available
+        free_user = float(st.f_frsize * st.f_bavail)
         
+        # total available
         available = free / size * 100.0
+        # total available for normal os user
         usr_available = free_user / size * 100.0
 
-        if disk_free_prcnt < available:
-            print "There's enough physical space available: " + str(int(available)) + "% of required " + str(int(disk_free_prcnt)) + "%"
-        else:
-            print "Not enough physical space, only " + str(int(available)) + "%% of required " + str(int(disk_free_prcnt))
-        
+        # run the command du -Psx /
+        # shortcut instead of walking through all the dirs
+        du = self.get_cmd_output('du', ['-Psx','/'] )
+        du = du.split("\t")[0]
+
+        # storage taken 
+        du_bytes = int(du) * 1024 
+        storage_available_prcent = (float(du) * 1024) / size * 100.0
+        # total available for everyone
+
         if disk_free_prcnt > usr_available:
             print "Not enough User Space, only " + str(int(usr_available)) + "% of required " + str(int(disk_free_prcnt)) + "%"
+            if disk_free_prcnt < available:
+                print "There's enough logical space available for super-users: " + str(int(available)) + "% of required " + str(int(disk_free_prcnt)) + "%"
+            else:
+                print "Not enough logical space, only " + str(int(available)) + "% of required " + str(int(disk_free_prcnt))
+                if disk_free_prcnt > storage_available_prcent:
+                    print "Physical storage used: " + str(storage_available_prcent) + "%"            
+                    
+                    out = self.get_cmd_output('lsof', ['-nP','+L1'])
+                    if len(out) > 1:
+                        print "There's a deleted file(s) in memory, please try and kill process or truncate the file to regain space."
+                        for line in out[1:len(out)-1]:
+                            line = line.split()
+                            print "Name/Pid 'File':  " + line[0] + "/" + line[1] + " '" + line[len(line)-2] + "'"
         else:
             print "There's enough user space avaialable: " + str(int(usr_available)) + "% is avaialable of required " + str(int(disk_free_prcnt)) + "%"
-
+            
 
     # use to check external hostnames
-    def mediate_dns_resolves(self, hostname):
-        self.hostname_resolves(hostname)
+    def remediate_dns(self, hostname):
+        self.remediate_hostname_resolves(hostname)
 
     # use to check internal hostname
-    def mediate_hostname_resolves(self, option):
+    # checks if NSS (Name Service Switch) is configured ok
+    def remediate_hostname(self, option):
         if option == 'yes':
             print 'Trying to resolve '
+
+        hostname = socket.gethostname()
         try:
             socket.gethostbyname(hostname)
             return 1
-        except socket.error:
+        except socket.gaierror:
             return 0
+        finally:
+            socket.close()
 
     # checks if the port is open or closed
     # if no process check firewall
     # check if the port availabe to bind to
     # if not see what process PID has it
-    def mediate_socket_connection(self, port):
+    def remediate_port(self, port):
  
         # check if port is within range
         if port > 0 and port <= 65535:
@@ -91,7 +114,7 @@ class SystemComplience:
                 if not is_bindable:
                     print "Looks like port: " + str(port) + " is taken by another process."
                     # netstat -tulpn | grep --color :80
-                    out, err = self.get_cmd_output('netstat', '-tulpn' )
+                    out = self.get_cmd_output('netstat', '-tulpn' )
                     # find port reference on line
                     pids_prog = set()
                     for line in out.split("\n"):
@@ -115,10 +138,7 @@ class SystemComplience:
         else:
             cmd = cmd + [switches]
         
-        prcss = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE)
-        # return out, error
-        return prcss.communicate()
+        return subprocess.check_output(cmd)
 
 
     def is_socket_open(self, host, port):

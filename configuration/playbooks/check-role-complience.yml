@@ -1,6 +1,7 @@
 system:
   comply:
-      - port_open: 80
-      - disk_free_percent: 65 
-      - dns_resolves: 'http://192.21.21.12/'
-      - hostname_resolves: ok
+    - port_ok: 80
+    - disk_free_percent: 60
+    # google.com is reachable
+    - dns_ok: 'googl.com'
+    - hostname_ok: ok
