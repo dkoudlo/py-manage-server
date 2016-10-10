@@ -1,7 +1,9 @@
 system:
   comply:
     - port_ok: 80
+    # enforse the state of storage
     - disk_free_percent: 60
     # google.com is reachable
     - dns_ok: 'googl.com'
-    - hostname_ok: ok
+    # yes means do a check 
+    - hostname_ok: yes

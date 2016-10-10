@@ -10,7 +10,7 @@ from modules.file.file_helper import File
 # and is checked against the system its runnning on
 # we can extend any playbook with options:
 # the remediation functions offer particular fixes
-class SystemComplience:
+class DebianSystemComplience:
 
     # options passed in are defined as follows
     # 
@@ -64,6 +64,7 @@ class SystemComplience:
                 if disk_free_prcnt > storage_available_prcent:
                     print "Physical storage used: " + str(storage_available_prcent) + "%"            
                     
+                    # chck for unreleased files in memory
                     out = self.get_cmd_output('lsof', ['-nP','+L1'])
                     if len(out) > 1:
                         print "There's a deleted file(s) in memory, please try and kill process or truncate the file to regain space."
@@ -76,22 +77,90 @@ class SystemComplience:
 
     # use to check external hostnames
     def remediate_dns(self, hostname):
-        self.remediate_hostname_resolves(hostname)
-
-    # use to check internal hostname
-    # checks if NSS (Name Service Switch) is configured ok
-    def remediate_hostname(self, option):
-        if option == 'yes':
-            print 'Trying to resolve '
-
-        hostname = socket.gethostname()
+        print "Trying to see if: " + hostname + " will resolve."
         try:
-            socket.gethostbyname(hostname)
-            return 1
+            ip = socket.gethostbyname(hostname)
+            print "DNS reolved ok for host: " + hostname + " with IP: " + ip
         except socket.gaierror:
-            return 0
-        finally:
-            socket.close()
+            # /etc/nsswitch.conf should contain dns method 
+            # so Debian knows it should use one of the nameservers in the /etc/resolv.conf
+            self.check_nsswitch_hosts_ok("dns")
+
+            resolve_conf_nameserver = self.get_line_starts_with("/etc/resolv.conf", "nameserver")
+
+            if resolve_conf_nameserver != "":
+                nameserver_ip = resolve_conf_nameserver.split()[1]
+
+                is_dns_port_open = self.is_socket_open(nameserver_ip, 53)
+                if not is_dns_port_open:
+                    print "Cannot Reach DNS server specified in the resolv.conf, please make sure it is not blocked by firewall."
+                else:
+                    print "Fatal complience error: DNS is not functinal. Please make sure it is not cached via local DNS proxy."
+            else:
+                print "No nameserver definition found in the /etc/resolv.conf. Please fix."
+
+
+
+
+    def remediate_hostname(self, option):
+        # get hostname
+        hostname = socket.gethostname()
+
+        if option == 'yes':
+            print 'Trying to resolve: ' + hostname
+            try:
+                # resolve hostneme to an ip
+                socket.gethostbyname(hostname)
+                print "Hostname resolution is OK"
+            except socket.gaierror as err:
+                # /etc/nsswitch.conf should contain file method
+                nsswitch_ok = self.check_nsswitch_hosts_ok("file")
+                # The files method is invoked first. If the hostname is found in 
+                # the "/etc/hosts" file, it returns all valid addresses for it and 
+                # exits.
+                # check if default ip is ok
+                # could be a different ip, but will use default for now
+                deflt_ip = "127.0.1.1"
+                hosts_default_ip = self.get_line_starts_with("/etc/hosts", deflt_ip)
+                deflt_ip_ok = False
+                for word in hosts_default_ip.split():
+                    if word == hostname:
+                        print "/etc/hosts has " deflt_ip_ok + " " + hostname + " defined properly"
+                        deflt_ip_ok = True
+                        break
+
+                if not deflt_ip_ok:
+                    print "Please make sure /etc/hosts has default ip entrie: " + deflt_ip + "\t" + hostname
+                else:
+                    print "Could not find why hostname resolution did not work. \nPlease check:\n- /etc/hostname file is not empty\n- maybe hostname is cached on local proxy DNS server"
+        else:
+            print "Will not check for hostname complience, the option is: " + option
+
+    # The "/etc/nsswitch.conf" file with stanza like "hosts: files dns" 
+    # dictates the hostname resolution order.
+    # returns if the method is found 
+    def check_nsswitch_hosts_ok(self, method):
+        # get the hosts: stanza
+        nsswitch_hosts = self.get_line_starts_with("/etc/nsswitch.conf", "hosts:")
+        # should contain method
+        for word in nsswitch_hosts.split():
+            if word == method:
+                print "/etc/nsswitch.conf config is OK and contains method " + method
+                return True
+        print "/etc/nsswitch.conf config does not have method " + method + " Please make sure hosts: stanza has proper method."
+        return False        
+
+    # takes in regex pattern and path of the file
+    # returns line from file and empty string is not found ""
+    def get_line_starts_with(path, pattern):
+        # open file for reading
+        with open(path, "r") as f:
+            for line in f:
+                # find first occurience from begging of the file
+                if re.match(pattern, line) != "None":
+                    return line
+                    break
+        return ""
 
     # checks if the port is open or closed
     # if no process check firewall
@@ -110,7 +179,7 @@ class SystemComplience:
                 if is_open:
                     print "Port is open for incoming connections: " + str(port)
                 else:
-                    print "Please see your firewall settings are correct and allow incoming connections on port: " + str(port)
+                    print "Please see your firewall settings are correct to allow incoming connections on port: " + str(port)
                 if not is_bindable:
                     print "Looks like port: " + str(port) + " is taken by another process."
                     # netstat -tulpn | grep --color :80
@@ -161,28 +230,3 @@ class SystemComplience:
                 else:
                     # something else raised the socket.error exception
                     return True
-
-    # # ############### Not Used ####################
-    # # check if file is complient
-    # def check_file(self):
-    #     os.path.isfile(fname)
-        
-
-    # # check if memory requirement is ok
-    # # TODO: Not needed yet
-    # def check_memory(self):
-    #     """
-    #     Get node total memory and memory usage
-    #     """
-    #     with open('/proc/meminfo', 'r') as mem:
-    #         ret = {}
-    #         tmp = 0
-    #         for i in mem:
-    #             sline = i.split()
-    #             if str(sline[0]) == 'MemTotal:':
-    #                 ret['total'] = int(sline[1])
-    #             elif str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
-    #                 tmp += int(sline[1])
-    #         ret['free'] = tmp
-    #         ret['used'] = int(ret['total']) - int(ret['free'])
-    #     return ret
