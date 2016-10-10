@@ -119,7 +119,7 @@ class DebianSystemComplience:
                 print "Hostname resolution is OK"
             except socket.gaierror as err:
                 # /etc/nsswitch.conf should contain file method
-                nsswitch_ok = self.check_nsswitch_hosts_ok("file")
+                nsswitch_ok = self.check_nsswitch_hosts_ok("files")
                 # The files method is invoked first. If the hostname is found in 
                 # the "/etc/hosts" file, it returns all valid addresses for it and 
                 # exits.
