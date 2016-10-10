@@ -54,7 +54,7 @@ All plugins are located in the `./modules/` directory and subdirectories. Utulit
   - comply plugin: makes sure the system is complient to the provided configuration, offers remediation to the found issues
     - input: only single list entrie at the time
         - port_ok: takes in a port number as an integer REQUIRED
-        - disk_free_percent: 80 takes in integer from 0 - 100 makes sure the storage meets specified space requirement
+        - disk_free_percent: takes in integer from 0 - 100 makes sure the storage meets specified space requirement
         - dns_ok: tries to resolve provided FQDN name to an ip
         - hostname_ok:  Checks Name Service Resolution for systems hostname Allowed `yes`, `no` (Default: `no`)
 - package in the `./modules/package/` everything related to the package management should go into here
