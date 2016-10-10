@@ -1,5 +1,5 @@
 import modules.options_helper
-from modules.system.complience_helper import SystemComplience 
+from modules.system.complience_helper import DebianSystemComplience 
 
 # this module runs complience checks and suggests remediations
 def main(options):
@@ -24,7 +24,7 @@ def main(options):
     hostname_ok = options.get("hostname_ok", False)
     
     if len(options) == 1:
-        cmply = SystemComplience()
+        cmply = DebianSystemComplience()
         if port_ok:
             cmply.remediate_port(port_ok)
         if disk_free_percent:

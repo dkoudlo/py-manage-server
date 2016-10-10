@@ -2,6 +2,7 @@ import os
 import socket
 import subprocess
 import re
+import sys
 from contextlib import closing
 from modules.file.file_helper import File
 
@@ -18,9 +19,8 @@ class DebianSystemComplience:
     #   comply:
     #     - port_open: 80
     #     - disk_free_percent: 80
-    #     - dns_resolves: 'http://192.21.21.12/'
+    #     - dns_ok: google.com
     #     - hostname_resolves: ok
-
 
     # check if storage requirement is complient
     # remitigation
@@ -71,11 +71,13 @@ class DebianSystemComplience:
                         for line in out[1:len(out)-1]:
                             line = line.split()
                             print "Name/Pid 'File':  " + line[0] + "/" + line[1] + " '" + line[len(line)-2] + "'"
+                    sys.exit("Fatal Complience Error: Not Enough Space")
         else:
             print "There's enough user space avaialable: " + str(int(usr_available)) + "% is avaialable of required " + str(int(disk_free_prcnt)) + "%"
             
 
     # use to check external hostnames
+    # takes in FQDN hostname
     def remediate_dns(self, hostname):
         print "Trying to see if: " + hostname + " will resolve."
         try:
@@ -95,7 +97,10 @@ class DebianSystemComplience:
                 if not is_dns_port_open:
                     print "Cannot Reach DNS server specified in the resolv.conf, please make sure it is not blocked by firewall."
                 else:
-                    print "Fatal complience error: DNS is not functinal. Please make sure it is not cached via local DNS proxy."
+                    print "Fatal complience error: DNS is not functinal."
+                    print "- Please make sure it is not cached via local DNS proxy."
+                    print "- Please check /etc/hosts for the " + hostname + " entrie."
+                    sys.exit( "- Please make sure the hostname is complient with FQDN" )
             else:
                 print "No nameserver definition found in the /etc/resolv.conf. Please fix."
 
@@ -106,8 +111,8 @@ class DebianSystemComplience:
         # get hostname
         hostname = socket.gethostname()
 
-        if option == 'yes':
-            print 'Trying to resolve: ' + hostname
+        if option:
+            print 'Trying to resolve hostname: ' + hostname
             try:
                 # resolve hostneme to an ip
                 socket.gethostbyname(hostname)
@@ -119,47 +124,49 @@ class DebianSystemComplience:
                 # the "/etc/hosts" file, it returns all valid addresses for it and 
                 # exits.
                 # check if default ip is ok
-                # could be a different ip, but will use default for now
+                # could be a different ip, but will use default Debian
                 deflt_ip = "127.0.1.1"
                 hosts_default_ip = self.get_line_starts_with("/etc/hosts", deflt_ip)
                 deflt_ip_ok = False
                 for word in hosts_default_ip.split():
                     if word == hostname:
-                        print "/etc/hosts has " deflt_ip_ok + " " + hostname + " defined properly"
+                        print "/etc/hosts has " + deflt_ip + " " + hostname + " defined properly"
                         deflt_ip_ok = True
                         break
 
                 if not deflt_ip_ok:
-                    print "Please make sure /etc/hosts has default ip entrie: " + deflt_ip + "\t" + hostname
+                    print "Fatal Complience Error: "
+                    sys.exit( "Please make sure /etc/hosts has default ip entrie: " + deflt_ip + "\t" + hostname )
                 else:
-                    print "Could not find why hostname resolution did not work. \nPlease check:\n- /etc/hostname file is not empty\n- maybe hostname is cached on local proxy DNS server"
+                    print "Could not find why hostname resolution did not work."
+                    print "Please check:\n- /etc/hostname file is not empty"
+                    print "- maybe hostname is cached on local proxy DNS server, etc."
         else:
-            print "Will not check for hostname complience, the option is: " + option
+            print "Will not check for hostname complience, the option is: " + str(option)
 
     # The "/etc/nsswitch.conf" file with stanza like "hosts: files dns" 
     # dictates the hostname resolution order.
     # returns if the method is found 
     def check_nsswitch_hosts_ok(self, method):
         # get the hosts: stanza
-        nsswitch_hosts = self.get_line_starts_with("/etc/nsswitch.conf", "hosts:")
+        nsswitch_hosts = self.get_line_starts_with("/etc/nsswitch.conf", "hosts")
         # should contain method
         for word in nsswitch_hosts.split():
             if word == method:
                 print "/etc/nsswitch.conf config is OK and contains method " + method
                 return True
         print "/etc/nsswitch.conf config does not have method " + method + " Please make sure hosts: stanza has proper method."
-        return False        
+        return False
 
     # takes in regex pattern and path of the file
     # returns line from file and empty string is not found ""
-    def get_line_starts_with(path, pattern):
+    def get_line_starts_with(self, path, pattern):
         # open file for reading
         with open(path, "r") as f:
             for line in f:
                 # find first occurience from begging of the file
-                if re.match(pattern, line) != "None":
+                if re.match(pattern, line) != None:
                     return line
-                    break
         return ""
 
     # checks if the port is open or closed
@@ -170,6 +177,7 @@ class DebianSystemComplience:
  
         # check if port is within range
         if port > 0 and port <= 65535:
+            # use lopback to check local machine
             is_open = self.is_socket_open('127.0.0.1', port)
             is_bindable = self.is_socket_bindable(port)
             
@@ -187,17 +195,17 @@ class DebianSystemComplience:
                     # find port reference on line
                     pids_prog = set()
                     for line in out.split("\n"):
-                        if line.find(":" + str(port)) > 0:
+                        if line.find(":" + str(port) + " ") > 0:
                             # remove multi space spaces and split by space
                             line = re.sub('\s\s+', ' ', line.strip()).split(" ")
                             pids_prog.add(line[len(line)-1])
                             print "socket state is: " + line[len(line)-2] + "\tfor protocol: " + line[0] + "\ton Local Address: " + line[3]
                     print "The port is taken by the PID/Program Name: " + ", ".join(pids_prog)
-                    print "Please see if the process's above should be stoped first!"
+                    print "Warning Complience Error: Please see if the process's above should be stoped first!"
         else:
-            print 'The port is out of range: ' + port
+            print 'The port is out of range: ' + port + '. Please fix configuration'
 
-
+    # run command and return output
     def get_cmd_output(self, command, switches):
         cmd = [command]
         # handle multiple swithes
@@ -209,7 +217,7 @@ class DebianSystemComplience:
         
         return subprocess.check_output(cmd)
 
-
+    # check if socket is open
     def is_socket_open(self, host, port):
         # make sure the socket gets closed afer check
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
@@ -220,6 +228,7 @@ class DebianSystemComplience:
             else:
                 return False
 
+    # check if we could use the socket on local machine
     def is_socket_bindable(self, port):
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
             try:

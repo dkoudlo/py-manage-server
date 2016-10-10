@@ -2,8 +2,11 @@ system:
   comply:
     - port_ok: 80
     # enforse the state of storage
-    - disk_free_percent: 60
-    # google.com is reachable
-    - dns_ok: 'googl.com'
+    - disk_free_percent: 80
+    # google.com is reachable for updates
+    - dns_ok: google.com
+    # see if localhost is configured ok since its refeered in the nginx config
+    - dns_ok: localhost
     # yes means do a check 
+    # check if hostname is configured
     - hostname_ok: yes
