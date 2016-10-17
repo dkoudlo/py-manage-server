@@ -73,6 +73,7 @@ All plugins are located in the `./modules/` directory and subdirectories. Utulit
         - path: path to the file (Default: none ) REQUIRED
         - find: string to be replaced (Default: none) REQUIRED
         - replace_with: replacement of the `find` string (Default: none) REQUIRED
+
 ## Walk Through Example
 Your boss asks you to install apache and edit the index.html page with the Company Name. So when he goes to the http://server-ip/ he can see Company Name somewhere on the index page. All that on 5 new instances. Here's the steps you will need to do:
 * Untar the code and add it to your repository on GitHub say you made one at the `github.com/your_usr_name/py-manage-server`
